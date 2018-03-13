@@ -9,7 +9,7 @@ import spray.json.RootJsonFormat
 
 object UsersRoutes extends UserJsonSupport with ErrorJsonSupport {
 
-  private val users = Seq(
+  private var users = Seq(
     User("1", "Harvey", "Spectre")
   )
 
@@ -21,11 +21,14 @@ object UsersRoutes extends UserJsonSupport with ErrorJsonSupport {
   }
 
   val usersRoutes: Route =
-//    path("users") {
-//      post {
-//        complete(withResponse(StatusCodes.OK, User("", "", "")))
-//      }
-//    } ~
+    path("users") {
+      post {
+        entity(as[User]) { user =>
+          users = users :+ user
+          complete(withResponse(StatusCodes.Created, user))
+        }
+      }
+    } ~
     path("users" / Segment) { id =>
       get {
         users.find(_.id == id) match {

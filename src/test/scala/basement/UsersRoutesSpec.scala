@@ -44,4 +44,24 @@ class UsersRoutesSpec extends WordSpec with Matchers with ScalatestRouteTest {
 
   }
 
+  "Sending a POST request to /users" when {
+
+    "valid user data is received" should {
+
+      "return a 201 Created status" in {
+        Post("/users", User("2", "Mike", "Ross")) ~> usersRoutes ~> check {
+          status shouldBe StatusCodes.Created
+        }
+      }
+
+      "return the newly created user" in {
+        Post("/users", User("2", "Mike", "Ross")) ~> usersRoutes ~> check {
+          responseAs[User] shouldBe User("2", "Mike", "Ross")
+        }
+      }
+
+    }
+
+  }
+
 }
