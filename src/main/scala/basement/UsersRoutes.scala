@@ -7,7 +7,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import spray.json.RootJsonFormat
 
-object UsersRoutes extends UserJsonSupport with ErrorJsonSupport {
+class UsersRoutes extends UserJsonSupport with ErrorJsonSupport {
 
   private var users = Seq(
     User("1", "Harvey", "Spectre")
@@ -34,6 +34,26 @@ object UsersRoutes extends UserJsonSupport with ErrorJsonSupport {
         users.find(_.id == id) match {
           case Some(user) => complete(withResponse(StatusCodes.OK, user))
           case None => complete(withResponse(StatusCodes.NotFound, Error(404, "User not found.")))
+        }
+      } ~
+      put {
+        entity(as[User]) { user =>
+          users.find(_.id == id) match {
+            case Some(_) =>
+              users = users.filterNot(_.id == id) :+ user
+              complete(withResponse(StatusCodes.OK, user))
+            case None => complete(withResponse(StatusCodes.NotFound, Error(404, "User not found.")))
+          }
+        }
+      } ~
+      delete {
+        entity(as[User]) { _ =>
+          users.find(_.id == id) match {
+            case Some(_) =>
+              users = users.filterNot(_.id == id)
+              complete(HttpResponse(StatusCodes.NoContent, entity = HttpEntity.Empty))
+            case None => complete(withResponse(StatusCodes.NotFound, Error(404, "User not found.")))
+          }
         }
       }
     }
